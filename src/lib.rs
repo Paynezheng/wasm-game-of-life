@@ -1,5 +1,7 @@
 mod utils;
 
+extern crate js_sys;
+
 use wasm_bindgen::prelude::*;
 use std::fmt;
 
@@ -58,15 +60,19 @@ impl Universe {
                 let live_neighbors = self.live_neighbor_count(row, col);
 
                 let next_cell = match (cell, live_neighbors) {
-                    // 规则 1: 任何少于两个邻居的活细胞死亡，就好像是由于人口不足造成的一样。.
+                    // Rule 1: Any live cell with fewer than two live neighbours
+                    // dies, as if caused by underpopulation.
                     (Cell::Alive, x) if x < 2 => Cell::Dead,
-                    // 规则 2: 任何一个有两个或三个邻居的活体细胞都能传到下一代。.
+                    // Rule 2: Any live cell with two or three live neighbours
+                    // lives on to the next generation.
                     (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
-                    // 规则 3: 任何居住着三个以上邻居的活细胞都会死亡，就好像是由于人口过剩。.
+                    // Rule 3: Any live cell with more than three live
+                    // neighbours dies, as if by overpopulation.
                     (Cell::Alive, x) if x > 3 => Cell::Dead,
-                    // 规则 4:任何一个只有三个相邻的活细胞的死细胞都会变成活细胞，就像通过繁殖一样。.
+                    // Rule 4: Any dead cell with exactly three live neighbours
+                    // becomes a live cell, as if by reproduction.
                     (Cell::Dead, 3) => Cell::Alive,
-                    // 所有其他单元格保持相同状态。
+                    // All other cells remain in the same state.
                     (otherwise, _) => otherwise,
                 };
 
@@ -84,11 +90,18 @@ impl Universe {
         //初始化宇宙
         let cells = (0..width * height)
             .map(|i| {
+                if js_sys::Math::random() < 0.5 {
+                    Cell::Alive
+                } else {
+                    Cell::Dead
+                }
+                /*
                 if i % 2 == 0 || i % 7 == 0 {
                     Cell::Alive
                 } else {
                     Cell::Dead
                 }
+                */
             })
             .collect();
 
@@ -130,3 +143,4 @@ impl fmt::Display for Universe {
         Ok(())
     }
 }
+
