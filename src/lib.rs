@@ -1,9 +1,11 @@
 mod utils;
 
 extern crate js_sys;
+extern crate fixedbitset;
 
 use wasm_bindgen::prelude::*;
 use std::fmt;
+use fixedbitset::FixedBitSet;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -23,7 +25,7 @@ pub enum Cell {
 pub struct Universe {
     width: u32,
     height: u32,
-    cells: Vec<Cell>,
+    cells: FixedBitSet,
 }
 
 
@@ -59,6 +61,15 @@ impl Universe {
                 let cell = self.cells[idx];
                 let live_neighbors = self.live_neighbor_count(row, col);
 
+                next.set(idx, match (cell, live_neighbors) {
+                    (true, x) if x < 2 => false,
+                    (true, 2) | (true, 3) => true,
+                    (true, x) if x > 3 => false,
+                    (false, 3) => true,
+                    (otherwise, _) => otherwise
+                });
+
+                /*
                 let next_cell = match (cell, live_neighbors) {
                     // Rule 1: Any live cell with fewer than two live neighbours
                     // dies, as if caused by underpopulation.
@@ -75,8 +86,8 @@ impl Universe {
                     // All other cells remain in the same state.
                     (otherwise, _) => otherwise,
                 };
-
-                next[idx] = next_cell;
+                */
+                //next[idx] = next_cell;
             }
         }
 
@@ -84,27 +95,16 @@ impl Universe {
     }
 
     pub fn new() -> Universe {
-        let width = 64;
-        let height = 64;
+        let width = 128;
+        let height = 128;
 
-        //初始化宇宙
-        let cells = (0..width * height)
-            .map(|i| {
-                if js_sys::Math::random() < 0.5 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-                /*
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-                */
-            })
-            .collect();
-
+        let size = (width * height) as usize;
+        let mut cells = FixedBitSet::with_capacity(size);
+    
+        for i in 0..size {
+            cells.set(i, js_sys::Math::random() < 0.5);
+        }
+    
         Universe {
             width,
             height,
@@ -124,8 +124,8 @@ impl Universe {
         self.height
     }
 
-    pub fn cells(&self) -> *const Cell {
-        self.cells.as_ptr()
+    pub fn cells(&self) -> *const u32 {
+        self.cells.as_slice().as_ptr()
     }
     // ...
 }
@@ -134,7 +134,7 @@ impl fmt::Display for Universe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for line in self.cells.as_slice().chunks(self.width as usize) {
             for &cell in line {
-                let symbol = if cell == Cell::Dead { "◻️" } else { "◼️" };
+                let symbol = if cell == 0 { "◻️" } else { "◼️" };
                 write!(f, "{}", symbol)?;
             }
             write!(f, "\n")?;
