@@ -60,15 +60,11 @@ const drawCells = () => {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
 
-      ctx.fillStyle = cells[idx] === Cell.Dead
-        ? DEAD_COLOR
-        : ALIVE_COLOR;
-
+      // This is updated!
       ctx.fillStyle = bitIsSet(idx, cells)
         ? ALIVE_COLOR
         : DEAD_COLOR;
-      
-      
+
       ctx.fillRect(
         col * (CELL_SIZE + 1) + 1,
         row * (CELL_SIZE + 1) + 1,

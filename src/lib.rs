@@ -3,6 +3,8 @@ mod utils;
 extern crate js_sys;
 extern crate fixedbitset;
 
+extern crate web_sys;
+
 use wasm_bindgen::prelude::*;
 use std::fmt;
 use fixedbitset::FixedBitSet;
@@ -13,12 +15,19 @@ use fixedbitset::FixedBitSet;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[wasm_bindgen]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Cell {
-    Dead = 0,
-    Alive = 1,
+// #[wasm_bindgen]
+// #[repr(u8)]
+// #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+// pub enum Cell {
+//     Dead = 0,
+//     Alive = 1,
+// }
+
+// 一个 macro(宏) 提供 `println!(..)`-形式 语法，给到 `console.log` 日志功能.
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
 }
 
 #[wasm_bindgen]
@@ -96,6 +105,7 @@ impl Universe {
     }
 
     pub fn new() -> Universe {
+        utils::set_panic_hook();
         let width = 128;
         let height = 128;
 
