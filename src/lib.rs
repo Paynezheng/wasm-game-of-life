@@ -86,8 +86,9 @@ impl Universe {
                     // All other cells remain in the same state.
                     (otherwise, _) => otherwise,
                 };
+                
+                next[idx] = next_cell;
                 */
-                //next[idx] = next_cell;
             }
         }
 
@@ -124,10 +125,51 @@ impl Universe {
         self.height
     }
 
+    /// 设置 宇宙 的 宽度.
+    /// 将所有的单元，重新设为 死亡 状态
+    pub fn set_width(&mut self, width: u32) {
+        self.width = width;
+        for row in 0..self.height {
+            for col in 0..self.width {
+                let idx = self.get_index(row, col);
+                self.cells.set(idx,false);
+            }
+        }
+        //self.cells = (0..width * self.height).map(|_i| Cell::Dead).collect();
+    }
+    /// 设置 宇宙 的 高度.
+    /// 将所有的单元，重新设为 死亡 状态
+    pub fn set_height(&mut self, height: u32) {
+        self.height = height;
+        for row in 0..self.height {
+            for col in 0..self.width {
+                let idx = self.get_index(row, col);
+                self.cells.set(idx,false);
+            }
+        }
+        //self.cells = (0..self.width * height).map(|_i| Cell::Dead).collect();
+    }
+
     pub fn cells(&self) -> *const u32 {
         self.cells.as_slice().as_ptr()
     }
-    // ...
+
+}
+
+impl Universe {
+    /// 给出 全部宇宙 死和活的值
+    pub fn get_cells(&self) -> &FixedBitSet {
+        &self.cells
+    }
+
+    /// 通过传递 作为数组的 单元(行与列)，可在一个宇宙内设置该单元为活的
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        // 遍历cells数组
+        for (row, col) in cells.iter().cloned() {
+            let idx = self.get_index(row, col);
+            self.cells.set(idx,true);
+        }
+    }
 }
 
 impl fmt::Display for Universe {

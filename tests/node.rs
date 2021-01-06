@@ -1,4 +1,5 @@
-//! Test suite for the Web and headless browsers.
+//! The tests in this suite use the default Node.js.
+
 
 #![cfg(target_arch = "wasm32")]
 
