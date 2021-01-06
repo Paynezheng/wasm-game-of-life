@@ -159,7 +159,15 @@ impl Universe {
         }
         //self.cells = (0..self.width * height).map(|_i| Cell::Dead).collect();
     }
-
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row,column);
+        if self.cells[idx] == true {
+            self.cells.set(idx,false);
+        }
+        else{
+            self.cells.set(idx,true);
+        }
+    }
     pub fn cells(&self) -> *const u32 {
         self.cells.as_slice().as_ptr()
     }
